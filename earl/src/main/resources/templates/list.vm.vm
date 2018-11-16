@@ -1,0 +1,168 @@
+<div id="list">
+<div>
+    <el-form label-width="120px" :model="query">
+        <el-row>
+#foreach(${column} in ${searchColumn})
+            <el-col :span="8">
+                <el-form-item label="$column.name:">
+                    <el-input v-model.sync="query.$column.key" placeholder="请输入$column.name" ></el-input>
+                </el-form-item>
+            </el-col>
+#if(${velocityCount}%3 == 0)
+        </el-row>
+        <el-row>
+#end
+#end
+    #if(${searchColumn.size()}%3 == 0)
+            <el-col :span="24" style="text-align: center;padding-bottom:5px">
+                <el-button type="primary" @click="search(1)">查询</el-button>
+                <el-button @click="reset">重置</el-button>
+            </el-col>
+#else
+            <el-col :span="8" style="text-align: center">
+                <el-button type="primary" @click="search(1)">查询</el-button>
+                <el-button @click="reset">重置</el-button>
+            </el-col>
+#end
+        </el-row>
+    </el-form>
+
+    <template>
+        <div class="ui-toolbar">
+            <el-button type="success" @click="toAdd">添加</el-button>
+            <el-button :disabled="selectData.length!=1" type="success" @click="toEdit">修改</el-button>
+            <el-button :disabled="selectData.length!=1" type="success" @click="toDelete">删除</el-button>
+        </div>
+        <el-table
+                ref="multipleTable"
+                :data="page.rows"
+
+
+
+                @selection-change="tableSelect">
+            <el-table-column type='index' width='60'/>
+            <el-table-column type='selection' width='80'/>
+#foreach($column in ${tableColumns})
+            <el-table-column width="100" prop="$column.key" label="$column.name" />
+#end
+        </el-table>
+    </template>
+    <el-pagination
+            @size-change="pageSizeChange"
+            @current-change="search"
+            :page-size="page.pageSize"
+            :total="page.total">
+    </el-pagination>
+    <el-dialog :visible.sync="editModal" :title="title" width="1000px" >
+        <el-form label-width="120px" ref="form" :model="form">
+            <el-row>
+#foreach(${column} in ${editColumn})
+                <el-col :span="12">
+                    <el-form-item label="$column.name:">
+                        <el-input v-model.sync="form.$column.key" placeholder="$column.name"></el-input>
+                    </el-form-item>
+                </el-col>
+#if(${velocityCount}%2 == 0)
+            </el-row>
+            <el-row>
+#end
+#end
+            </el-row>
+        </el-form>
+        <div slot="footer">
+            <el-button @click="save" type="primary">保存</el-button>
+            <el-button @click="editModal=false">关闭</el-button>
+        </div>
+    </el-dialog>
+    </div>
+</div>
+<script>
+    new Vue({
+        el:"#list",
+        watch:{
+            'editModal':function(v,s){
+                if(!v){
+                    this.loadData();
+                    this.form = this.initData().form;
+                }
+            }
+        },
+        data:function(){
+            return this.initData();
+        },
+        methods:{
+            initData:function(){
+                return {
+                    self:this,
+                    page:{total:0, rows:[], pagesize:10},
+                    query: {'pageNo':1, 'pageSize':10, 'order':'createTime'},
+                    form: {},
+                    title: '',
+                    editModal:false,
+                    queryUrl: '${package.ModuleName}/${entityNameFirstLower}/list',
+                    formUrl: '${package.ModuleName}/${entityNameFirstLower}/form',
+                    deleteUrl: '${package.ModuleName}/${entityNameFirstLower}/delete',
+                    saveUrl: '${package.ModuleName}/${entityNameFirstLower}/save',
+                    selectData:[]
+                }
+            },
+            search: function(pageNo){
+                this.query['pageNo'] = pageNo;
+                this.loadData();
+            },
+            pageSizeChange:function(pageSize){
+                this.query['pageSize'] = pageSize;
+                this.loadData();
+            },
+            loadData:function(){
+                this.selectData = [];
+                httpPost(this.queryUrl,this.query,function(data,status){
+                    this.page = data;
+                }.bind(this));
+            },
+            reset:function(){
+                this.query = this.initData().query;
+                this.loadData();
+            },
+            tableSelect:function(selection,row){
+                this.selectData = selection;
+            },
+            toAdd:function() {
+                this.showModal();
+            },
+            toEdit:function () {
+                this.showModal(this.selectData[0].id);
+            },
+            showModal:function(id){
+                this.editModal = true;
+                this.title = id==null?"添加":"修改";
+                if (id != null){
+                    httpPost(this.formUrl,{'id':id}, function (result) {
+                        this.form = result;
+                    }.bind(this));
+                } else {
+                    this.form = this.initData().form;
+                }
+            },
+            save:function () {
+                #set($refs = '$refs')
+                this.${refs}['form'].validate(function(valid) {
+                    if (valid) {
+                        httpPost(this.saveUrl,JSON.stringify(this.form),function (result) {
+                            this.loadData();
+                        }.bind(this));
+                    }
+                }.bind(this));
+            },
+            toDelete:function(){
+                var id = this.selectData[0].id;
+                httpPost(this.deleteUrl,{'id':id},function (result) {
+                    this.loadData();
+                }.bind(this));
+            }
+        },
+        mounted:function(){
+            this.loadData();
+        }
+    })
+</script>

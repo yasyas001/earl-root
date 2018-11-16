@@ -1,0 +1,99 @@
+<style>
+    #export .pop-table td.table-info-row{
+        background-color: #2db7f5 !important;
+        color: #fff;
+    }
+</style>
+<div id="export">
+	<div>
+		<el-dialog :visible.sync="exportModel" :title="options.title" width="500px" >
+            <el-table :data="list" :height="list.length>7 ? 500 : ''">
+                <el-table-column type="index"></el-table-column>
+                <el-table-column prop="isDown" label="<lang r='状态'>sys.pub.label.status</lang>"></el-table-column>
+                <el-table-column label="<lang r='操作'>sys.pub.label.operate</lang>">
+                    <template slot-scope="scope" >
+                        <el-button  @click="downExcel(scope.row.pageNo)">第{{scope.row.pageNo}}页</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+		</el-dialog>
+    </div>
+</div>
+<script type="text/javascript">
+var excelExportObj = new Vue({
+	el:"#export",
+	data: function(){
+	    return {
+            exportModel: false,
+            options: {
+                title: '<lang r="导出">sys.pub.btn.export</lang>'
+            },
+            list: []
+        }
+	},
+	methods:{
+		downExcel:function(page){
+			this.list[page-1].isDown = "<lang r='已下载'>sys.pub.label.hasDownload</lang>";
+			this.list[page-1].cellClassName = {pageNo:"table-info-row",isDown:"table-info-row"};
+            wmsMsg.downFile(this.importExportDTO.exportActionUrl + "&pageNo=" + page + "&pageSize=" + this.importExportDTO.exportPaginationSize);
+		},
+		/**
+		 * @Description: 导出
+		 * @param configFile 导出模板文件
+		 * @param actionUrl 查询数据的URL地址
+		 * @param totalCount 数据总数
+		 * @param data 查询数据的参数
+		 * @param title 标题框文字
+		 * @param paginationSize 每页条数
+		 * @author wangfan11@jd.com
+		 * @date 2018/2/23 10:55
+		 */
+		export:function(configFile,actionUrl,totalCount,data,title,paginationSize){
+			
+			paginationSize = stringUtil.isBlank(paginationSize)? 2000 : paginationSize;
+			totalCount = stringUtil.isBlank(totalCount)? 0 : totalCount;
+			this.options = {
+							'configFile':configFile,
+							'actionUrl':actionUrl,
+							'totalCount':totalCount,
+							'title':'<lang r="分页">sys.pub.btn.pagination</lang>'+(stringUtil.isBlank(title)?'<lang r="导出">sys.pub.btn.export</lang>':title)+' - <lang r="每页">sys.pub.btn.everyPage</lang>'+(paginationSize)+'<lang r="条数据">sys.pub.btn.data</lang>',
+							'paginationSize':paginationSize
+							};
+			
+			if(totalCount==0) {
+				wmsMsg.errorMsg("<lang r='没有数据导出'>sys.pub.msg.noDataExport</lang>");
+				return;
+			}
+			var paramData = data;
+			delete paramData['pageNo'];
+            delete paramData['pageSize'];
+            delete paramData['page.pageNo'];
+            delete paramData['page.pageSize'];
+			var url = (this.options.actionUrl) + (this.options.actionUrl.indexOf("?")>-1?'&':'?') + "configFile="+(this.options.configFile)+"&"+stringUtil.parseParam(paramData);
+
+			if(totalCount > paginationSize) {
+				var pageCount = totalCount % paginationSize == 0 ? totalCount / paginationSize : parseInt(totalCount / paginationSize) + 1;
+				var dataList = [];
+				for (var i = 1; i <= pageCount; i++) {
+					dataList.push({'pageNo':i,'isDown':'<lang r="未下载">sys.pub.label.noDownload</lang>'});
+				}
+				this.list = dataList;
+
+				this.importExportDTO = {
+					'exportTotalCount': totalCount,
+					'exportPaginationSize': paginationSize,
+					'exportActionUrl': url
+				}
+			
+				this.exportModel = true;
+			} else {
+                var url = url+'&pageNo=1&pageSize='+paginationSize;
+                while(url.indexOf("&&")>1){
+                    url = url.replace("&&","&");
+                }
+                wmsMsg.downFileJfs(url);
+			}
+		}								
+	}
+});
+</script>

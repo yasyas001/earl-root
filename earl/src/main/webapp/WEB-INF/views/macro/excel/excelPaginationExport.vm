@@ -1,0 +1,116 @@
+<style>
+    .pop-table td.table-info-row{
+        background-color: #2db7f5 !important;
+        color: #fff;
+    }
+</style>
+<div id="export" style="display: none;">
+	<div>
+        <el-dialog :visible.sync="exportModel" :title="options.title" width="800px">
+            <el-table :data="list">
+                    <el-table-column v-for="item in columns"
+                                     :type="item.type"
+                                     :prop="item.key"
+                                     :label="item.title"
+                                     :width="item.width"
+                                     :render-cell="item.formatter"
+                    >
+                    </el-table-column>
+            </el-table>
+            <div slot="footer"></div>
+        </el-dialog>
+	</div>
+</div>
+<script type="text/javascript">
+    var excelExportObj = null;
+	setTimeout(function(){
+        excelExportObj = new Vue({
+            el:"#export",
+            data: function(){
+                return {
+                    self: this,
+                    exportModel: false,
+                    options: {
+                        title: '<lang r="导出">sys.pub.btn.export</lang>'
+                    },
+                    list: [],
+                    columns: [{
+                        type: 'index',
+                        width: 60,
+                        align: 'center'
+                    }, {
+                        title: '<lang r="分页">sys.pub.btn.pagination</lang>',
+                        key: 'pageNo',
+                        align: 'center',
+                        formatter:function(e, t, i){
+                            var n = t.row;
+                            return e('el-button', {
+                                attrs:{type:"text"},
+                                on: {
+                                    click: function() {
+                                        return excelExportObj.downExcel(n.pageNo);
+                                    }
+                                }
+                            }, ['<lang r="第">sys.pub.label.index</lang>'+n.pageNo+ '<lang r="页">sys.pub.label.page</lang>']);
+                        }
+                    }, {
+                        title: '<lang r="状态">sys.pub.label.status</lang>',
+                        align: 'center',
+                        key: 'isDown'
+                    }]
+                }
+            },
+            methods:{
+                downExcel:function(page){
+                    wmsMsg.openLoading();
+                    location.href = this.importExportDTO.exportActionUrl + "&page.pageNo=" + page + "&page.pageSize=" + this.importExportDTO.exportPaginationSize;
+                    this.list[page-1].isDown = "<lang r='已下载'>sys.pub.label.hasDownload</lang>";
+                    this.list[page-1].cellClassName = {pageNo:"table-info-row",isDown:"table-info-row"};
+                    setTimeout(function(){
+                        wmsMsg.closeLoading();
+                    },2000);
+                },
+                export:function(configFile,actionUrl,totalCount,data,title,paginationSize){
+                    paginationSize = stringUtil.isBlank(paginationSize)? 2000 : paginationSize;
+                    totalCount = stringUtil.isBlank(totalCount)? 0 : totalCount;
+                    this.options = {
+                        'configFile':configFile,
+                        'actionUrl':actionUrl,
+                        'totalCount':totalCount,
+                        'title':'<lang r="分页">sys.pub.btn.pagination</lang>'+(stringUtil.isBlank(title)?'<lang r="导出">sys.pub.btn.export</lang>':title)+' - <lang r="每页">sys.pub.btn.everyPage</lang>'+(paginationSize)+'<lang r="行">sys.pub.label.row</lang>',
+                        'paginationSize':paginationSize
+                    };
+
+                    if(totalCount==0) {
+                        wmsMsg.errorMsg("<lang r='没有数据导出'>sys.pub.msg.noDataExport</lang>");
+                        return;
+                    }
+
+                    var url = (this.options.actionUrl) + (this.options.actionUrl.indexOf("?")>-1?'&':'?') + "configFile="+(this.options.configFile)+"&"+stringUtil.parseParam(data);
+                    url=url.replace(
+                            "&page.pageSize=", "&_rows-rows_=").replace("&page.pageNo=", "&_page-page_=")
+
+                    if(totalCount > paginationSize) {
+                        var pageCount = totalCount % paginationSize == 0 ? totalCount / paginationSize : parseInt(totalCount / paginationSize) + 1;
+                        var dataList = [];
+                        for (var i = 1; i <= pageCount; i++) {
+                            dataList.push({'pageNo':i,'isDown':'<lang r="未下载">sys.pub.label.noDownload</lang>'});
+                        }
+                        this.list = dataList;
+
+                        this.importExportDTO = {
+                            'exportTotalCount': totalCount,
+                            'exportPaginationSize': paginationSize,
+                            'exportActionUrl': url
+                        }
+
+                        this.exportModel = true;
+                    } else {
+                        location.href=url+"&page.pageNo=1&page.pageSize=999999999";
+                    }
+                }
+            }
+        });
+        document.getElementById("export").style.display="block";
+	},1000);
+</script>

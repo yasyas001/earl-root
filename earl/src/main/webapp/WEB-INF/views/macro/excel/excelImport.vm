@@ -1,0 +1,65 @@
+<div id="import">
+<el-dialog :visible.sync="importModel" :title="options.title" width="800" :mask-closable="false">
+<form label-position="right" inline="true" id="importForm">
+	<el-row>
+        <el-col :span="5" :offset="1">
+                <el-upload :data="importExportDTO" ref="upload" :on-progress="onProgress" :before-upload="beforeUploa" :on-success="success" :on-error="error" action="/framework/excel/import"  name="importFile" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+				  <el-button type="ghost" icon="ios-cloud-upload-outline"><lang r="上传文件">sys.pub.label.uploadFile</lang></el-button>
+				</el-upload>
+        </el-col>
+        <el-col :span="18">
+                <el-button type="primary" @click="downLoad"><lang r="Excel模板下载">sys.pub.label.downExcelTpl</lang></el-button>
+        </el-col>
+	</el-row>
+	</form>
+	 <div slot="footer" style="display:none;"></div>
+	</el-dialog>
+</div>
+	<script>
+		var excelImportObj = new Vue({
+			el:"#import",
+			data:{
+				importModel:false,
+				options:{title:'<lang r="导入">sys.pub.label.import</lang>'},
+				importExportDTO:{
+					serviceBeans:null,
+					configFile:null,
+					id:null
+				}
+			},
+			methods:{
+                downLoad: function(){
+					location.href="/framework/excel/downTemplate?configFile="+(this.importExportDTO.configFile)+"&serviceBeans="+(this.importExportDTO.serviceBeans);						
+				},
+				success:function(response, file, fileList){
+                    if(response!=null && response.errorFile != null){
+                        wmsMsg.notify("<lang r='上传失败,请下载查看错误文件'>sys.pub.msg.uploadFailedViewErrFile</lang>");
+                        location.href=response.errorFile;
+					}else if(response!=null && response.errorMsg!=null){
+                        wmsMsg.notify("<lang r='上传失败'>sys.pub.msg.uploadFailed</lang>",response.errorMsg);
+					}else{
+                        wmsMsg.msg("<lang r='上传成功'>sys.pub.msg.uploadSuccess</lang>");
+                        this.importModel = false;
+                        this.refreshTableFun();
+					}
+				},
+				error:function(error, file, fileList){
+                    wmsMsg.notify("<lang r='上传失败'>sys.pub.msg.uploadFailed</lang>",error);
+				},
+                beforeUploa:function () {
+                    this.$refs.upload.clearFiles();
+                },
+                onProgress:function(event, file, fileList){
+					console.log(event, file, fileList);
+				},
+				import:function(configFile,serviceBean,refreshTableFun){
+					this.importExportDTO = {
+									'configFile':configFile,
+									'serviceBeans':serviceBean
+								}
+					this.importModel = true;
+					this.refreshTableFun = refreshTableFun;
+				}								
+			}
+		});
+	</script>

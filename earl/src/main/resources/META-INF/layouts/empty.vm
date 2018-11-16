@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title><lang r="首页">sys.menu.label.home.page</lang></title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="renderer" content="webkit" />
+    <base href=""/>
+
+    <!-- 引入样式 -->
+    <link rel="shortcut icon" href="/static/images/favicon.ico" >
+    <link rel="stylesheet" href="/static/common/ui.css">
+    <link rel="stylesheet" href="/static/common/main.css?v=${buildVersion}">
+    <!-- 先引入 Vue -->
+    <script src="/static/common/vue.js"></script>
+    <script src="/static/common/vue-router.min.js"></script>
+    <script src="/static/common/vue-resource.min.js"></script>
+    <!-- 引入组件库 -->
+    <script src="/static/common/locales.js"></script>
+    <script src="/static/common/ui.js"></script>
+    <script type="text/javascript" src="/static/common/jQuery.js"></script>
+
+</head>
+
+<body>
+<div id="default-msg"></div>
+<script src="/static/common/base.js?v=${buildVersion}"></script>
+    $screen_content
+</body>
+
+</html>

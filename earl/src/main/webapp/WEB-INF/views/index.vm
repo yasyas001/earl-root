@@ -1,0 +1,247 @@
+<div id="app">
+  <h1>Hello App!</h1>
+  <p>
+    <!-- 使用 router-link 组件来导航. -->
+    <!-- 通过传入 `to` 属性指定链接. -->
+    <!-- <router-link> 默认会被渲染成一个 `<a>` 标签 -->
+    <router-link to="/foo">Go to Foo</router-link>
+    <router-link to="/bar">Go to Bar</router-link>
+  </p>
+  <!-- 路由出口 -->
+  <!-- 路由匹配到的组件将渲染在这里 -->
+  <router-view></router-view>
+</div>
+<template id="foo">
+    <div>foo<button @click="getUser">点击</button></div>
+</template>
+<template id="bar">
+    <div>
+        <el-form :model="query" label-width="150px">
+            <el-row>
+                <el-col :span="7">
+                    <el-form-item label="ip:端口号/库名" required>
+                        <el-input v-model="query.ip"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="7">
+                    <el-form-item label="用户名" required>
+                        <el-input v-model="query.username"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="7">
+                    <el-form-item label="密码" required>
+                        <el-input v-model="query.password"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="3" >
+                    <el-button type="primary" @click="search(1)">查询</el-button>
+                </el-col>
+            </el-row>
+            <el-row>
+            <el-col :span="7">
+                <el-form-item label="表名">
+                    <el-input v-model="query.tableName"></el-input>
+                </el-form-item>
+            </el-col>
+        </el-row>
+        </el-form>
+        <el-table :data="page.list" style="width: 100%" @selection-change="search">
+            <el-table-column label="表名">
+                <template slot-scope="scope">
+                    <el-button size="mini" type="text" @click="handleEdit(scope.$index, scope.row)">{{ scope.row.tableName }}</el-button>
+                </template>
+            </el-table-column>
+            <el-table-column label="Engine" prop="engine"></el-table-column>
+            <el-table-column label="表备注" prop="tableComment"></el-table-column>
+            <el-table-column label="创建时间" prop="createTime"></el-table-column>
+        </el-table>
+        <el-row>
+            <el-col :offset="12" :span="12">
+                <el-pagination @size-change="pageSizeChange" @current-change="search" background
+                               :current-page.sync="page.pageNo"
+                               :page-size="page.pageSize"
+                               :total="page.count">
+                </el-pagination>
+            </el-col>
+        </el-row>
+
+        <el-dialog :title="genConfig.tableName" :visible.sync="dialogModel">
+            <el-form :model="genConfig" label-width="80px">
+                <el-form-item label="包路径" >
+                    <el-input v-model="genConfig.parent" ></el-input>
+                </el-form-item>
+            </el-form>
+            <el-table :data="genConfig.advancedColumns" style="width: 100%">
+                <el-table-column label="columnName" prop="columnName"></el-table-column>
+                <el-table-column label="key" prop="key">
+                    <template slot-scope="scope">
+                        <el-input size="mini" v-model="scope.row.key">{{ scope.row.key }}</el-input>
+                    </template>
+                </el-table-column>
+                <el-table-column label="name" prop="name">
+                    <template slot-scope="scope">
+                        <el-input size="mini" v-model="scope.row.name">{{ scope.row.name }}</el-input>
+                    </template>
+                </el-table-column>
+                <el-table-column label="是否可搜索">
+                    <template slot-scope="scope">
+                        <el-switch v-model="scope.row.isSearch" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+                    </template>
+                </el-table-column>
+                <el-table-column label="是否可编辑">
+                    <template slot-scope="scope">
+                        <el-switch v-model="scope.row.isEdit" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+                    </template>
+                </el-table-column>
+                <el-table-column label="是否表单元素">
+                    <template slot-scope="scope">
+                        <el-switch v-model="scope.row.isTable" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogModel = false">取 消</el-button>
+                <el-button type="primary" @click="generator">确 定</el-button>
+            </div>
+        </el-dialog>
+    </div>
+</template>
+
+<script>
+    // 0. 如果使用模块化机制编程，导入Vue和VueRouter，要调用 Vue.use(VueRouter)
+
+    // 1. 定义 (路由) 组件。
+    // 可以从其他文件 import 进来
+    const Foo = { template: '#foo',methods:{
+            getUser:function(){
+                axios.get('/getHeader')
+                        .then(function (response) {
+                            console.log(response);
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+            }
+        } }
+    const Bar = { template: '#bar',data:function(){
+            return this.initData();
+        },
+        methods:{
+            initData:function(){
+                return {
+                    query:{
+                        "tableName":"",
+                        "ip":"",
+                        'pageNo':1,
+                        'pageSize':10
+                    },
+                    page:{
+                        count:0,
+                        list:[],
+                        pageSize:10
+                    },
+                    dialogModel:false,
+                    genConfig:{
+                        url:"",
+                        tableName:"",
+                        parent:"",
+                        moduleName:"",
+                        advancedColumns:[],
+                    }
+                };
+            },
+            search: function(pageNo){
+                this.query['pageNo'] = pageNo;
+                this.loadData();
+            },
+            pageSizeChange:function(pageSize){
+                this.query['pageSize'] = pageSize;
+                this.loadData();
+            },
+            loadData:function(){
+                this.selectData = [];
+                if(this.query.ip==null || this.query.ip==""){
+                    this.$message('ip必填');
+                    return;
+                }
+                if(this.query.username==null || this.query.username==""){
+                    this.$message('用户必填');
+                    return;
+                }
+                if(this.query.password==null || this.query.password==""){
+                    this.$message('密码必填');
+                    return;
+                }
+                axios.post('/a/sys/gen/listData', this.query)
+                        .then(function (data) {
+                            this.page = data.data;
+                        }.bind(this))
+                        .catch(function (error) {
+                            console.log(error);
+                        }.bind(this));
+            },
+            handleEdit:function(index,row){
+                this.genConfig.advancedColumns = this.initData().genConfig.advancedColumns;
+                this.dialogModel = true;
+                var data = JSON.parse(JSON.stringify(this.query));
+                data.tableName = row.tableName;
+                axios.post('/a/sys/gen/queryColumns', data)
+                        .then(function (data) {
+                            console.log(data);
+                            this.genConfig.parent = "com";
+                            this.genConfig.url = this.query.ip;
+                            this.genConfig.tableName = row.tableName;
+                            this.genConfig.advancedColumns = data.data;
+                            this.genConfig.username = this.query.username;
+                            this.genConfig.password = this.query.password;
+                        }.bind(this))
+                        .catch(function (error) {
+                            console.log(error);
+                        }.bind(this));
+            },
+            generator:function(){
+                console.log(this.genConfig);
+                if(this.genConfig.parent ==null || this.genConfig.parent ==""){
+                    this.$message('包路径必填');
+                    return;
+                }
+                axios.post('/a/sys/gen/code', this.genConfig)
+                        .then(function (data) {
+                            if(data.data){
+                                location.href ="/a/sys/gen/downGen?zipPath="+data.data;
+                            }else{
+                                this.$message("生成异常");
+                            }
+                        }.bind(this))
+                        .catch(function (error) {
+                            console.log(error);
+                        }.bind(this));
+            }
+        },
+        created:function(){
+        }
+    }
+
+    // 2. 定义路由
+    // 每个路由应该映射一个组件。 其中"component" 可以是
+    // 通过 Vue.extend() 创建的组件构造器，
+    // 或者，只是一个组件配置对象。
+    // 我们晚点再讨论嵌套路由。
+    const routes = [
+        { path: '/foo', component: Foo },
+        { path: '/bar', component: Bar }
+    ]
+
+    // 3. 创建 router 实例，然后传 `routes` 配置
+    // 你还可以传别的配置参数, 不过先这么简单着吧。
+    const router = new VueRouter({
+        routes // (缩写) 相当于 routes: routes
+    })
+
+    // 4. 创建和挂载根实例。
+    // 记得要通过 router 配置参数注入路由，
+    // 从而让整个应用都有路由功能
+    const app = new Vue({
+        router
+    }).$mount('#app')
+</script>
