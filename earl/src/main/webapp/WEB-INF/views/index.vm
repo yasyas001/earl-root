@@ -208,7 +208,7 @@
                 axios.post('/a/sys/gen/code', this.genConfig)
                         .then(function (data) {
                             if(data.data){
-                                BaseUtil.downFile("/a/sys/gen/downGen?zipPath="+data.data);
+                                BaseUtil.downFile("/a/sys/gen/downGen?zipPath="+encodeURIComponent(data.data));
                             }else{
                                 this.$message("生成异常");
                             }

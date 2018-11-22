@@ -23,6 +23,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -147,7 +148,7 @@ public class GenController{
             bufferedWriter.close();
 
 
-            File zip = ZipUtil.zip(genPath+"/"+ genConfig.getTableName() + "/", zipPath);
+            File zip = ZipUtil.zip(genPath+"/"+ genConfig.getTableName() + "/", zipPath, Charset.forName("utf-8"),true);
             zipPath = zip.getPath();
 
 
