@@ -37,8 +37,17 @@ var BaseUtil = new Vue({
             }
         },
         downFile:function(url){
-            $("#downFileIframe").remove();
-            $("body").append("<iframe style='display: none;' id='downFileIframe' name='downFileIframe' src='"+url+"'></iframe>");
+            var ifm = document.getElementById("downFileIframe");
+
+            if(ifm == null){
+                ifm = document.createElement('iframe');
+                ifm.name = 'downFileIframe';
+                ifm.id = "downFileIframe";
+                document.getElementsByTagName("body")[0].appendChild(ifm);
+
+            }
+            ifm.setAttribute('src',url);
+
         },
         isNotBlank :function(cs){
             return !this.isBlank(cs);
@@ -79,7 +88,7 @@ var BaseUtil = new Vue({
 });
 
 
-// 请求拦截器
+// 请求拦截器$
 axios.interceptors.request.use(function(config)  {
     BaseUtil.showFullScreenLoading();
     return config;

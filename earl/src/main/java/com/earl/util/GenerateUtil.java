@@ -59,17 +59,17 @@ public class GenerateUtil {
         strategy.setInclude(new String[] { config.getTableName() }); // 需要生成的表
         // strategy.setExclude(new String[]{"test"}); // 排除生成的表
         // 自定义实体父类
-        strategy.setSuperEntityClass("com.yihaodian.scm.core.bean.DataEntity");
+        strategy.setSuperEntityClass("com.jy.scm.core.bean.DataEntity");
         // 自定义实体，公共字段
         strategy.setSuperEntityColumns(new String[] { "id", "create_date", "create_by", "update_date", "update_by", "version", "del_flag","company_id"});
         // 自定义 mapper 父类
-        strategy.setSuperMapperClass("com.logc.scm.framework.common.persistence.CrudDao");
+        strategy.setSuperMapperClass("com.jy.scm.framework.common.persistence.CrudDao");
         // 自定义 service 父类
-        strategy.setSuperServiceClass("com.yihaodian.scm.core.service.ICrudService");
+        strategy.setSuperServiceClass("com.jy.scm.core.service.ICrudService");
         // 自定义 service 实现类父类
-        strategy.setSuperServiceImplClass("com.logc.scm.framework.common.service.CrudService");
+        strategy.setSuperServiceImplClass("com.jy.scm.framework.common.service.CrudService");
         // 自定义 controller 父类
-        strategy.setSuperControllerClass("com.logc.scm.framework.common.web.BaseController");
+        strategy.setSuperControllerClass("com.jy.scm.framework.common.web.BaseController");
         mpg.setStrategy(strategy);
 
         // 包配置

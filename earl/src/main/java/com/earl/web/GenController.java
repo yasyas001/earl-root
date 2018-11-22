@@ -31,48 +31,6 @@ import java.util.Map;
 @RequestMapping(value = "/a/sys/gen")
 public class GenController{
 
-//    @Autowired
-//    private SysGeneratorService sysGeneratorService;
-
-//    @Autowired
-//    private DataSourceManager dataSourceManager;
-//
-//    @Autowired
-//    private RouterManager routerManager;
-
-//    @RequestMapping
-//    public String index(Model model, HttpServletRequest request, HttpServletResponse response, @RequestParam Map<String, Object> params) {
-//        DataSourceManager dataSourceManager = ApplicationContextHolder.getBean(DataSourceManager.class);
-//        Map<String, DataSource> datasources = dataSourceManager.getDatasources();
-//
-//        List<String> dbFlag = new ArrayList<>();
-//        for (String key : datasources.keySet()) {
-//            dbFlag.add(key);
-//        }
-//
-//        RouterManager routerManager = ApplicationContextHolder.getBean(RouterManager.class);
-//        String defaultDbFlag = routerManager.getDefaultDbFlag();
-//        model.addAttribute("defFlag",defaultDbFlag);
-//        model.addAttribute("dbFlagList", com.alibaba.fastjson.JSON.toJSONString(dbFlag));
-//        return "modules/sys/genList";
-//    }
-
-//    @RequestMapping("form")
-//    public String form(Model model, HttpServletRequest request, HttpServletResponse response, @RequestParam Map<String, Object> params) {
-//        DataSourceManager dataSourceManager = ApplicationContextHolder.getBean(DataSourceManager.class);
-//        Map<String, DataSource> datasources = dataSourceManager.getDatasources();
-//
-//        List<String> dbFlag = new ArrayList<>();
-//        for (String key : datasources.keySet()) {
-//            dbFlag.add(key);
-//        }
-//
-//        RouterManager routerManager = ApplicationContextHolder.getBean(RouterManager.class);
-//        String defaultDbFlag = routerManager.getDefaultDbFlag();
-//        model.addAttribute("defFlag",defaultDbFlag);
-//        model.addAttribute("dbFlagList", com.alibaba.fastjson.JSON.toJSONString(dbFlag));
-//        return "modules/sys/genList";
-//    }
 
 
     /**
@@ -166,7 +124,7 @@ public class GenController{
 
         int i = (int) (Math.random() * 1000000);
         String srcPath = GenerateUtil.class.getResource("/").getPath() + "genTemplates/";
-        String zipPath = srcPath + "/" + i + "_" + genConfig.getTableName() + ".zip";
+        String zipPath = srcPath + i + "_" + genConfig.getTableName() + ".zip";
         String genPath = srcPath+i;
         File file = new File(genPath+"/"+genConfig.getTableName());
         if(!file.isDirectory()){
@@ -189,7 +147,8 @@ public class GenController{
             bufferedWriter.close();
 
 
-            ZipUtil.zip(genPath+"/"+genConfig.getTableName()+"/",zipPath);
+            File zip = ZipUtil.zip(genPath+"/"+ genConfig.getTableName() + "/", zipPath);
+            zipPath = zip.getPath();
 
 
         }catch (Exception e){

@@ -52,7 +52,7 @@
         <property name="viewClass" value="org.springframework.web.servlet.view.velocity.VelocityLayoutView"/>
         <property name="order" value="0"/>
         <property name="prefix" value=""/>
-        <property name="suffix" value=".html"/>
+        <property name="suffix" value=".vm"/>
         <property name="layoutUrl"
                   value="/META-INF/layouts/default.vm"></property>
         <property name="toolboxConfigLocation"
@@ -65,8 +65,9 @@
           class="org.springframework.web.servlet.view.ViewResolverComposite">
         <property name="viewResolvers">
             <list>
-                <ref bean="htmlViewResolver"/>
-               <ref bean="jspViewResolver"/>
+                <ref bean="velocityLayoutViewResolver"/>
+                <!-- <ref bean="htmlViewResolver"/>
+                <ref bean="jspViewResolver"/>-->
             </list>
         </property>
     </bean>

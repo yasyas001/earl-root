@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.yihaodian.scm.core.inject.InjectNameUtil;
-import com.yihaodian.scm.core.bean.Page;
-import com.logc.scm.framework.common.web.AjaxReturn;
+import com.jy.scm.core.inject.InjectNameUtil;
+import com.jy.scm.core.bean.Page;
+import com.jy.scm.framework.common.web.AjaxReturn;
 import org.springframework.ui.Model;
 import ${package.Entity}.${entity};
 import ${package.Service}.${table.serviceName};
@@ -37,11 +37,8 @@ public class ${table.controllerName} {
 #end
 
     @Autowired private ${table.serviceName} ${table.entityPath}Service;
-    
-    @GetMapping("/list")
-    public String manager() {
-        return "modules/${table.entityPath}/${table.entityPath}List";
-    }
+
+
 
     @PostMapping("/listData")
     @ResponseBody
@@ -63,10 +60,10 @@ public class ${table.controllerName} {
         ${entity} ${table.entityPath} = ${table.entityPath}Service._selectById(id);
         return InjectNameUtil.inject(${table.entityPath});
     }
-    
+
     /**
      * 保存
-     * @param 
+     * @param
      * @return
      */
     @PostMapping("/save")
@@ -74,7 +71,7 @@ public class ${table.controllerName} {
     public void save(@Valid ${entity} ${table.entityPath}) {
         ${table.entityPath}Service.insertOrUpdate(${table.entityPath});
     }
-    
+
     /**
      * 删除
      * @param id
